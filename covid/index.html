@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
+    <title>COVID-19 States Tracker</title>
+</head>
+<body>
+<script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js" integrity="sha512-rmZcZsyhe0/MAjquhTgiUcb4d9knaFc7b5xAfju483gbEXTkeJRUMIPk6s3ySZMYUHEcjKbjLjyddGWMrNEvZg==" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
+
+<style>
+    .ct-series-a .ct-line {
+        stroke: dodgerblue;
+        stroke-width: 1px;
+        stroke-dasharray: 10px 20px;
+    }
+
+    .ct-series-a .ct-point {
+        stroke: dodgerblue;
+        stroke-width: 2px;
+        stroke-linecap: square;
+    }
+
+    .ct-series-b .ct-line {
+        stroke: orange;
+        stroke-width: 1px;
+        stroke-dasharray: 10px 20px;
+    }
+
+    .ct-series-b .ct-point {
+        stroke: orange;
+        stroke-width: 2px;
+        stroke-linecap: square;
+    }
+
+    .ct-series-c .ct-line {
+        stroke: red;
+        stroke-width: 1px;
+        stroke-dasharray: 10px 20px;
+    }
+
+    .ct-series-c .ct-point {
+        stroke: red;
+        stroke-width: 2px;
+        stroke-linecap: square;
+    }
+
+    .chart-title {
+        font-size: 20px;
+        text-align: center;
+    }
+
+    .chart-container {
+        margin:6px;
+    }
+    .quarantined {
+        border: 2px solid red;
+    }
+
+</style>
+
+<div class="container-fluid">
+    <div id="graphs" class="row">
+    </div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+
+    // Generated using census data from https://api.census.gov/data/2019/pep/population?get=NAME,POP&for=state:*
+    const statePopulations = {
+        "MS": 2976149,
+        "MO": 6137428,
+        "MT": 1068778,
+        "NE": 1934408,
+        "NV": 3080156,
+        "NH": 1359711,
+        "NJ": 8882190,
+        "NM": 2096829,
+        "NY": 19453561,
+        "NC": 10488084,
+        "ND": 762062,
+        "OH": 11689100,
+        "OK": 3956971,
+        "OR": 4217737,
+        "PA": 12801989,
+        "RI": 1059361,
+        "SC": 5148714,
+        "SD": 884659,
+        "TN": 6829174,
+        "TX": 28995881,
+        "VT": 623989,
+        "UT": 3205958,
+        "VA": 8535519,
+        "WA": 7614893,
+        "WV": 1792147,
+        "WI": 5822434,
+        "WY": 578759,
+        "DC": 705749,
+        "AL": 4903185,
+        "AK": 731545,
+        "AZ": 7278717,
+        "AR": 3017804,
+        "CA": 39512223,
+        "CO": 5758736,
+        "DE": 973764,
+        "CT": 3565287,
+        "FL": 21477737,
+        "GA": 10617423,
+        "ID": 1787065,
+        "HI": 1415872,
+        "IL": 12671821,
+        "IN": 6732219,
+        "IA": 3155070,
+        "KS": 2913314,
+        "KY": 4467673,
+        "LA": 4648794,
+        "ME": 1344212,
+        "MD": 6045680,
+        "MA": 6892503,
+        "MI": 9986857,
+        "MN": 5639632
+    };
+
+    const stateNames = {
+        "AL": "Alabama",
+        "AK": "Alaska",
+        "AS": "American Samoa",
+        "AZ": "Arizona",
+        "AR": "Arkansas",
+        "CA": "California",
+        "CO": "Colorado",
+        "CT": "Connecticut",
+        "DE": "Delaware",
+        "DC": "District Of Columbia",
+        "FM": "Federated States Of Micronesia",
+        "FL": "Florida",
+        "GA": "Georgia",
+        "GU": "Guam",
+        "HI": "Hawaii",
+        "ID": "Idaho",
+        "IL": "Illinois",
+        "IN": "Indiana",
+        "IA": "Iowa",
+        "KS": "Kansas",
+        "KY": "Kentucky",
+        "LA": "Louisiana",
+        "ME": "Maine",
+        "MH": "Marshall Islands",
+        "MD": "Maryland",
+        "MA": "Massachusetts",
+        "MI": "Michigan",
+        "MN": "Minnesota",
+        "MS": "Mississippi",
+        "MO": "Missouri",
+        "MT": "Montana",
+        "NE": "Nebraska",
+        "NV": "Nevada",
+        "NH": "New Hampshire",
+        "NJ": "New Jersey",
+        "NM": "New Mexico",
+        "NY": "New York",
+        "NC": "North Carolina",
+        "ND": "North Dakota",
+        "MP": "Northern Mariana Islands",
+        "OH": "Ohio",
+        "OK": "Oklahoma",
+        "OR": "Oregon",
+        "PW": "Palau",
+        "PA": "Pennsylvania",
+        "PR": "Puerto Rico",
+        "RI": "Rhode Island",
+        "SC": "South Carolina",
+        "SD": "South Dakota",
+        "TN": "Tennessee",
+        "TX": "Texas",
+        "UT": "Utah",
+        "VT": "Vermont",
+        "VI": "Virgin Islands",
+        "VA": "Virginia",
+        "WA": "Washington",
+        "WV": "West Virginia",
+        "WI": "Wisconsin",
+        "WY": "Wyoming"
+    };
+
+    function rollingAverage(array, days) {
+        if (days > array.length) {
+            throw "Array too small!"
+        }
+        let result = [];
+        for (let i = 0; i < array.length; i++) {
+            let average = 0
+            for (let j = Math.max(i - days, 0); j < i; j++) {
+                average += array[j].y;
+            }
+            result.push({ x: array[i].x, y: (average / days) })
+        }
+        return result;
+    }
+
+    let states = new Map();
+    $.get("https://covidtracking.com/api/v1/states/daily.json",function(data){
+        data.forEach(function(element) {
+            if (!states.has(element.state)) {
+                states.set(element.state, []);
+            }
+            states.get(element.state).push(element);
+        });
+
+        Object.getOwnPropertyNames(statePopulations).sort().forEach(function(state) {
+        //['DE', 'NY', 'MA', 'ID', 'MT', 'WY', 'SD', 'ND'].forEach(function (state) {
+            let graphs = document.getElementById("graphs");
+            console.log(state);
+            let data = states.get(state);
+            data.sort((a, b) => (a.date > b.date) ? 1 : -1);
+            let totalCases = data.map(s => ({ x: moment(s.date, "YYYYMMDD"), y: s.positive }));
+            let totalCasesPerCapita = data.map(s => ({ x: moment(s.date, "YYYYMMDD"), y: (s.positive / statePopulations[state]) }));
+            let percentPositive = data.map(s => ({ x: moment(s.date, "YYYYMMDD"), y: (s.positive / (s.positive + s.negative + s.pending) * 100) }));
+
+            let newCases = [data[0]];
+            for (let i = 1; i < data.length; i++) {
+                newCases.push({x: moment(data[i].date, "YYYYMMDD"), y: (data[i].positive - data[i-1].positive)});
+            }
+            let newCasesPerCapita = newCases.map(s => ({x: s.x, y: (s.y / statePopulations[state]) }))
+            let averageNewCasesPerCapita = rollingAverage(newCasesPerCapita, 7);
+            let newCasesPerCapitaLimit = newCases.map(s => ({x: s.x, y: (10 / 100000) }))
+
+            let chartData2 = {
+                series: [
+                    // {
+                    //     name: "Total Cases",
+                    //     data: totalCases
+                    // },
+                    // {
+                    //     name: "Total Cases Per Capita",
+                    //     data: totalCasesPerCapita
+                    // },
+                    // {
+                    //     name: "% Positive",
+                    //     data: percentPositive
+                    // },
+                    // {
+                    //     name: "New Cases",
+                    //     data: newCases
+                    // },
+                    //{
+                    //    name: "New Cases per Capita",
+                    //    data: newCasesPerCapita
+                    //}
+                ]
+            };
+
+            let chartData = {
+                series: [
+                    {
+                        name: "New Cases per Capita",
+                        data: newCasesPerCapita
+                    },
+                    {
+                        name: "Average New Cases per Capita",
+                        data: averageNewCasesPerCapita
+                    },
+                    {
+                        name: "Limit",
+                        data: newCasesPerCapitaLimit
+                    },
+                ]
+            }
+            console.log(averageNewCasesPerCapita);
+            let options = {
+                width: 320,
+                height: 220,
+                axisX: {
+                    type: Chartist.FixedScaleAxis,
+                    divisor: 5,
+                    labelInterpolationFnc: function(value) {
+                        return moment(value).format('MMM');
+                    }
+                }
+            }
+            console.log(chartData);
+            console.log(`#${state}`);
+            let aboveLimit = averageNewCasesPerCapita[averageNewCasesPerCapita.length - 1].y >= (10 / 100000)
+            graphs.insertAdjacentHTML('beforeend', `<div class="chart-container ${aboveLimit ? 'quarantined' : ''}"><div class="chart-title">${stateNames[state]} - ${newCases[newCases.length - 1].y} new cases</div><div id="${state}" class="ct-chart"></div></div>`);
+            new Chartist.Line(`#${state}`, chartData, options);
+        });
+    });
+});
+</script>
+
+</body>
+</html>
