@@ -15,7 +15,7 @@
     .ct-series-a .ct-line {
         stroke: dodgerblue;
         stroke-width: 1px;
-        stroke-dasharray: 10px 20px;
+        stroke-dasharray: 0;
     }
 
     .ct-series-a .ct-point {
@@ -27,7 +27,7 @@
     .ct-series-b .ct-line {
         stroke: orange;
         stroke-width: 1px;
-        stroke-dasharray: 10px 20px;
+        stroke-dasharray: 0;
     }
 
     .ct-series-b .ct-point {
@@ -39,7 +39,6 @@
     .ct-series-c .ct-line {
         stroke: red;
         stroke-width: 1px;
-        stroke-dasharray: 10px 20px;
     }
 
     .ct-series-c .ct-point {
@@ -203,7 +202,7 @@ $(document).ready(function() {
     }
 
     let states = new Map();
-    $.get("https://covidtracking.com/api/v1/states/daily.json",function(data){
+    $.get("https://api.covidtracking.com/v1/states/daily.json",function(data){
         data.forEach(function(element) {
             if (!states.has(element.state)) {
                 states.set(element.state, []);
@@ -212,7 +211,6 @@ $(document).ready(function() {
         });
 
         Object.getOwnPropertyNames(statePopulations).sort().forEach(function(state) {
-        //['DE', 'NY', 'MA', 'ID', 'MT', 'WY', 'SD', 'ND'].forEach(function (state) {
             let graphs = document.getElementById("graphs");
             console.log(state);
             let data = states.get(state);
@@ -285,7 +283,7 @@ $(document).ready(function() {
             console.log(chartData);
             console.log(`#${state}`);
             let aboveLimit = averageNewCasesPerCapita[averageNewCasesPerCapita.length - 1].y >= (10 / 100000)
-            graphs.insertAdjacentHTML('beforeend', `<div class="chart-container ${aboveLimit ? 'quarantined' : ''}"><div class="chart-title">${stateNames[state]} - ${newCases[newCases.length - 1].y} new cases</div><div id="${state}" class="ct-chart"></div></div>`);
+            graphs.insertAdjacentHTML('beforeend', `<div class="chart-container ${aboveLimit ? 'quarantined' : ''}"><div class="chart-title">${stateNames[state]} - ${newCases[newCases.length - 1].y} new cases<br>Population: ${statePopulations[state].toLocaleString('en')}</div><div id="${state}" class="ct-chart"></div></div>`);
             new Chartist.Line(`#${state}`, chartData, options);
         });
     });
